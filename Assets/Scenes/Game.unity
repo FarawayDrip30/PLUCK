@@ -1474,6 +1474,10 @@ MonoBehaviour:
   wallDistance: 4
   levelScale: 4
   maxSpawnTimer: 4
+  noDeleteCap: 25
+  deleteChance: 0.2
+  deleteMin: 0
+  deleteMax: 10
 --- !u!1 &1074444451
 GameObject:
   m_ObjectHideFlags: 0
