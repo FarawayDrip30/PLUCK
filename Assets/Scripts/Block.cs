@@ -1,3 +1,5 @@
+using NUnit.Framework;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Block : MonoBehaviour
@@ -9,20 +11,51 @@ public class Block : MonoBehaviour
 
     public bool placed = false;
 
+    public bool beingPlucked = false;
+
+    List<Block> connectedBlocks;
+
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         bc = GetComponent<BoxCollider>();
+
+        connectedBlocks = new List<Block>();
     }
 
     private void OnTriggerEnter(Collider collision)
     {
         currCollisions++;
+        Block collidedBlock = collision.GetComponent<Block>();
+        if (collidedBlock != null) {
+            connectedBlocks.Add(collidedBlock);
+        }
     }
 
     private void OnTriggerExit(Collider collision)
     {
+        removedContact();
+        Block collidedBlock = collision.GetComponent<Block>();
+        if (collidedBlock != null)
+        {
+            connectedBlocks.Remove(collidedBlock);
+        }
+    }
+
+    public void removedContact()
+    {
         currCollisions--;
+        Debug.Log("Collisions Left: " + currCollisions);
+    }
+
+    public void hasBeenRemoved()
+    {
+        foreach (Block block in connectedBlocks)
+        {
+            block.removedContact();
+        }
+
+        connectedBlocks.Clear();
     }
 
     public int getCurrCollisions()
@@ -47,5 +80,10 @@ public class Block : MonoBehaviour
             }
         }
 
+    }
+
+    public void setCurrCollisions(int newCurrCollisions)
+    {
+        currCollisions = newCurrCollisions;
     }
 }

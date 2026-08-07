@@ -11,6 +11,7 @@ enum PlayerState
 
 public class PlayerController : MonoBehaviour
 {
+    public static PlayerController singleton;
     [SerializeField] Camera cam;
     [SerializeField] Transform sunCamTransform;
     [SerializeField] Transform camLookAtTransform;
@@ -38,7 +39,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Sprite sunLookIcon;
     [SerializeField] Sprite sunHandIcon;
 
-    Block currPlucking = null;
+    [SerializeField] PluckBlockSpawner pluckBlockSpawner;
+
+    public Block currPlucking = null;
     Rigidbody currPluckingRB = null;
 
     PlayerState playerState = PlayerState.Sun;
@@ -47,6 +50,8 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+        singleton = this;
+
         targetFOV = startFOV;
 
         pluckCameraRayLayerMask = ~LayerMask.GetMask("Wall");
@@ -113,11 +118,16 @@ public class PlayerController : MonoBehaviour
             }
 
             targetFOV += FOVPluckSpeed * Time.deltaTime;
-            currPlucking.transform.position -= camLookAtTransform.transform.forward * pullSpeed * Time.deltaTime;
-
-            if (currPlucking.getCurrCollisions() <= 0)
+            //Debug.Log(currPlucking);
+            if (currPlucking != null)
             {
-                StartFalling();
+                currPlucking.transform.position -= camLookAtTransform.transform.forward * pullSpeed * Time.deltaTime;
+
+                if (currPlucking.getCurrCollisions() <= 0)
+                {
+                    pluckBlockSpawner.removeBlockFromBlocks(currPlucking.gameObject);
+                    StartFalling();
+                }
             }
         }
 
@@ -168,6 +178,7 @@ public class PlayerController : MonoBehaviour
     void StartPlucking(Block go)
     {
         currPlucking = go;
+        currPlucking.beingPlucked = true;
         currPluckingRB = currPlucking.GetComponent<Rigidbody>();
 
         playerState = PlayerState.Plucking_Pull;
@@ -184,7 +195,8 @@ public class PlayerController : MonoBehaviour
     }
 
     void CancelPlucking()
-    { 
+    {
+        currPlucking.beingPlucked = false;
         currPlucking = null;
         currPluckingRB = null;
 

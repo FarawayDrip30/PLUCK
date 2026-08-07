@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class PluckBlockSpawner : MonoBehaviour
 {
-    [SerializeField] GameObject blockPrefab;
+    ObjectPool blockPool;
 
     [SerializeField] float minSpawnDistance = 30;
     [SerializeField] float maxSpawnDistance = 60;
@@ -25,6 +25,9 @@ public class PluckBlockSpawner : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        blockPool = ObjectPool.pools["blocks"];
+        Debug.Log("FUCK!");
+
         blocks = new List<GameObject>();
         spawnTimer = maxSpawnTimer;
     }
@@ -50,10 +53,12 @@ public class PluckBlockSpawner : MonoBehaviour
 
     void spawnBlock()
     {
-        GameObject tempBlock = Instantiate(blockPrefab);
+        //GameObject tempBlock = Instantiate(blockPrefab);
+        GameObject tempBlock = blockPool.getObject();
         float angle = Mathf.Deg2Rad * Random.Range(0, 360);
         float blockX = Mathf.Cos(angle) * wallDistance * levelScale;
         float blockZ = Mathf.Sin(angle) * wallDistance * levelScale;
+        tempBlock.GetComponent<Block>().setCurrCollisions(0);
         tempBlock.transform.position = new Vector3(blockX, 20 + Random.Range(minSpawnDistance, maxSpawnDistance), blockZ);
         blocks.Add(tempBlock);
     }
@@ -66,10 +71,21 @@ public class PluckBlockSpawner : MonoBehaviour
             if (blocks.Count > 0)
             {
                 int removeId = Random.Range(0, blocks.Count);
-                Destroy(blocks[removeId]);
-                blocks.RemoveAt(removeId);
-                Debug.Log("REMOVED");
+                if (!blocks[removeId].GetComponent<Block>().beingPlucked)
+                {
+                    blockPool.returnToPool(blocks[removeId]);
+                    Block removedBlock = blocks[removeId].GetComponent<Block>();
+                    removedBlock.hasBeenRemoved();
+                    removedBlock.setCurrCollisions(0);
+                    //Destroy();
+                    blocks.RemoveAt(removeId);
+                }
             }
         }
+    }
+
+    public void removeBlockFromBlocks(GameObject block)
+    {
+        blocks.Remove(block);
     }
 }
