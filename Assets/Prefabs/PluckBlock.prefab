@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 6541347732917290722}
   - component: {fileID: 7014823931223015285}
   - component: {fileID: 6961757921592302486}
+  - component: {fileID: 8540591236166985934}
   m_Layer: 6
   m_Name: PluckBlock
   m_TagString: Pluckable
@@ -67,7 +68,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: bea7cacf92293ce499f7ef24c0861b4d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -150,3 +151,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   placed: 0
+  beingPlucked: 0
+--- !u!114 &8540591236166985934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6133931764974809574}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d13f9b4ddee537c4aaae3a0a02b3bd4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseMaterial: {fileID: 2100000, guid: bea7cacf92293ce499f7ef24c0861b4d, type: 2}
+  hueRange: {x: 0, y: 355}
+  saturationRange: {x: 65, y: 65}
+  brightnessRange: {x: 100, y: 100}

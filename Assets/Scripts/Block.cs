@@ -6,6 +6,7 @@ public class Block : MonoBehaviour
 {
     Rigidbody rb;
     BoxCollider bc;
+    RandomColourFromMaterial rcfm;
 
     int currCollisions = 0;
 
@@ -19,6 +20,9 @@ public class Block : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         bc = GetComponent<BoxCollider>();
+        rcfm = GetComponent<RandomColourFromMaterial>();
+
+        rcfm.generateMaterial();
 
         connectedBlocks = new List<Block>();
     }
@@ -68,6 +72,9 @@ public class Block : MonoBehaviour
     {
         bc.isTrigger = false;
         rb.isKinematic = false;
+
+
+        rcfm.applyMaterial();
     }
 
     private void OnCollisionEnter(Collision collision)
