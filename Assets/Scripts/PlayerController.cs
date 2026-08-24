@@ -25,6 +25,7 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] float startFOV = 60;
     [SerializeField] float endFOV = 30;
+    [SerializeField] float maxFOV = 120;
     [SerializeField] float FOVLerpSpeed = 1;
     [SerializeField] float FOVPluckSpeed = 1;
     float targetFOV = 0;
@@ -87,7 +88,7 @@ public class PlayerController : MonoBehaviour
             RaycastHit hit;
             if (Physics.Raycast(sunCamTransform.position, sunCamTransform.forward, out hit, 1000))
             {
-                targetFOV = startFOV + Vector3.Distance(sunCamTransform.position, hit.point);
+                targetFOV = Mathf.Min(maxFOV, startFOV + Vector3.Distance(sunCamTransform.position, hit.point));
 
                 if (hit.collider.tag == "Pluckable")
                 {

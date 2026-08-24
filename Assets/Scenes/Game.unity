@@ -1984,6 +1984,7 @@ MonoBehaviour:
   camRotLerpSpeed: 5
   startFOV: 60
   endFOV: 30
+  maxFOV: 150
   FOVLerpSpeed: 10
   FOVPluckSpeed: 10
   maxFreezeTime: 10
@@ -3025,10 +3026,6 @@ PrefabInstance:
     - target: {fileID: 6133931764974809574, guid: f220aca42a7ec8d4995965edffc54ad0, type: 3}
       propertyPath: m_Name
       value: PluckBlock
-      objectReference: {fileID: 0}
-    - target: {fileID: 6961757921592302486, guid: f220aca42a7ec8d4995965edffc54ad0, type: 3}
-      propertyPath: velBounceMult
-      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 8546596773236236674, guid: f220aca42a7ec8d4995965edffc54ad0, type: 3}
       propertyPath: m_LocalPosition.x
