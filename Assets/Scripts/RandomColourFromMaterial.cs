@@ -22,8 +22,6 @@ public class RandomColourFromMaterial : MonoBehaviour
 
         generatedMaterial = newMaterial;
 
-        Debug.Log(generatedMaterial.color);
-
         return newMaterial;
     }
 

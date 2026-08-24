@@ -152,6 +152,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   placed: 0
   beingPlucked: 0
+  bounceMin: 5
+  bounceMax: 20
+  velBounceMult: 0.4
 --- !u!114 &8540591236166985934
 MonoBehaviour:
   m_ObjectHideFlags: 0

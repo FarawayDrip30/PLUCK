@@ -14,7 +14,15 @@ public class Block : MonoBehaviour
 
     public bool beingPlucked = false;
 
+    [SerializeField] float bounceMin;
+    [SerializeField] float bounceMax;
+
+    [SerializeField] float velBounceMult;
+
     List<Block> connectedBlocks;
+
+    RandomAudio bounceRandomAudio;
+    RandomAudio thudRandomAudio;
 
     private void Start()
     {
@@ -25,6 +33,9 @@ public class Block : MonoBehaviour
         rcfm.generateMaterial();
 
         connectedBlocks = new List<Block>();
+
+        bounceRandomAudio = RandomAudio.singletons["Bounce"];
+        thudRandomAudio = RandomAudio.singletons["Thud"];
     }
 
     private void OnTriggerEnter(Collider collision)
@@ -49,7 +60,6 @@ public class Block : MonoBehaviour
     public void removedContact()
     {
         currCollisions--;
-        Debug.Log("Collisions Left: " + currCollisions);
     }
 
     public void hasBeenRemoved()
@@ -75,6 +85,8 @@ public class Block : MonoBehaviour
 
 
         rcfm.applyMaterial();
+
+        thudRandomAudio.Play();
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -83,10 +95,18 @@ public class Block : MonoBehaviour
         {
             if (collision.contacts[0].point.y < transform.position.y)
             {
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x, Mathf.Abs(rb.linearVelocity.y) + Random.Range(5.0f, 20.0f), rb.linearVelocity.z);
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x, Mathf.Abs(rb.linearVelocity.y) * velBounceMult + Random.Range(bounceMin, bounceMax), rb.linearVelocity.z);
+                bounceRandomAudio.Play();
+            }
+            else
+            {
+                thudRandomAudio.Play();
             }
         }
-
+        else
+        {
+            thudRandomAudio.Play();
+        }
     }
 
     public void setCurrCollisions(int newCurrCollisions)
