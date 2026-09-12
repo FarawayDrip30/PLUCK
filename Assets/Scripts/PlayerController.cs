@@ -18,10 +18,17 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float fallCamDistance;
     [SerializeField] float fromWallForce;
     [SerializeField] float blockMoveSpeed;
-    [SerializeField] float camPosLerpSpeed = 1;
-    [SerializeField] float camRotLerpSpeed = 1;
+    [SerializeField] float camPosMainLerpSpeed = 20;
+    [SerializeField] float camRotMainLerpSpeed = 5;
+    [SerializeField] float lerpLerpSpeed = 20;
+    float camPosLerpSpeed = 1;
+    float camRotLerpSpeed = 1;
+    float camPosTargetLerpSpeed = 1;
+    float camRotTargetLerpSpeed = 1;
     Quaternion camRotTarget;
     Vector3 camPosTarget;
+
+    bool cancelledPluckButStillLookingAtBlock = false;
 
     [SerializeField] float startFOV = 60;
     [SerializeField] float endFOV = 30;
@@ -43,6 +50,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] PluckBlockSpawner pluckBlockSpawner;
 
     public Block currPlucking = null;
+    public Block currLookingAtBlock = null;
     Rigidbody currPluckingRB = null;
 
     PlayerState playerState = PlayerState.Sun;
@@ -55,7 +63,17 @@ public class PlayerController : MonoBehaviour
 
         targetFOV = startFOV;
 
+        camPosLerpSpeed = camPosMainLerpSpeed;
+        camRotLerpSpeed = camRotMainLerpSpeed;
+        TargetLerpSpeedsToMain();
+
         pluckCameraRayLayerMask = ~LayerMask.GetMask("Wall");
+    }
+
+    void TargetLerpSpeedsToMain()
+    {
+        camPosTargetLerpSpeed = camPosMainLerpSpeed;
+        camRotTargetLerpSpeed = camRotMainLerpSpeed;
     }
 
     void Update()
@@ -72,6 +90,11 @@ public class PlayerController : MonoBehaviour
         }
 
 
+        camPosLerpSpeed = Mathf.Lerp(camPosLerpSpeed, camPosTargetLerpSpeed, lerpLerpSpeed);
+        camRotLerpSpeed = Mathf.Lerp(camRotLerpSpeed, camRotTargetLerpSpeed, lerpLerpSpeed);
+
+        
+
 
         if (playerState == PlayerState.Sun || playerState == PlayerState.Sun_Zoom)
         {
@@ -84,6 +107,7 @@ public class PlayerController : MonoBehaviour
             camRotTarget = sunCamTransform.rotation;
             camPosTarget = sunCamTransform.position;
             UI.singleton.crosshair.sprite = sunLookIcon;
+            currLookingAtBlock = null;
 
             RaycastHit hit;
             if (Physics.Raycast(sunCamTransform.position, sunCamTransform.forward, out hit, 1000))
@@ -95,6 +119,8 @@ public class PlayerController : MonoBehaviour
                     Block block = hit.collider.gameObject.GetComponent<Block>();
                     if (!block.placed)
                     {
+                        currLookingAtBlock = block;
+
                         UI.singleton.crosshair.sprite = sunHandIcon;
 
                         playerState = PlayerState.Sun_Zoom;
@@ -119,6 +145,7 @@ public class PlayerController : MonoBehaviour
             }
 
             targetFOV += FOVPluckSpeed * Time.deltaTime;
+
             //Debug.Log(currPlucking);
             if (currPlucking != null)
             {
@@ -174,35 +201,65 @@ public class PlayerController : MonoBehaviour
         cam.transform.position = Vector3.Lerp(cam.transform.position, camPosTarget, camPosLerpSpeed * Time.deltaTime);
         cam.transform.rotation = Quaternion.Lerp(cam.transform.rotation, camRotTarget, camRotLerpSpeed * Time.deltaTime);
         cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, FOVLerpSpeed * Time.deltaTime);
+
+
+        // If we're looking at a block we should always LookAt it so it's always central
+        if (playerState == PlayerState.Sun || playerState == PlayerState.Sun_Zoom || playerState == PlayerState.Plucking_Pull)
+        {
+            if (currLookingAtBlock)
+            {
+                if (currPlucking || cancelledPluckButStillLookingAtBlock)
+                {
+                    cam.transform.LookAt(currLookingAtBlock.gameObject.transform);
+                }
+            }
+            else
+            {
+                cancelledPluckButStillLookingAtBlock = false;
+            }
+        }
     }
 
     void StartPlucking(Block go)
     {
+        // Set Block
         currPlucking = go;
         currPlucking.beingPlucked = true;
         currPluckingRB = currPlucking.GetComponent<Rigidbody>();
 
+        // Set State
         playerState = PlayerState.Plucking_Pull;
 
+        // Set rotation of look at transform
         camLookAtTransform.position = new Vector3(0, currPlucking.transform.position.y, 0);
         camLookAtTransform.LookAt(currPlucking.transform.position);
 
+        // Raycast from block to center and set camera there (sets camlookattransform)
         SetCameraBetweenCurrObjectAndThingsInWay();
 
+        // Set position and rotation targets to lerp to look at
         camPosTarget = camLookAtTransform.position;
         camRotTarget = camLookAtTransform.rotation;
+        // Set lerp speeds so rotation of rot and pos reach target at the same time
+        //camPosTargetLerpSpeed = 1/Vector3.Distance(cam.transform.position, camPosTarget) * 200;
+        //camRotTargetLerpSpeed = 1/Quaternion.Angle(cam.transform.rotation, camRotTarget) * 200;
+        camRotTargetLerpSpeed = 0;
 
         targetFOV = startFOV;
     }
 
     void CancelPlucking()
     {
+        cancelledPluckButStillLookingAtBlock = true;
+
         currPlucking.beingPlucked = false;
         currPlucking = null;
         currPluckingRB = null;
 
         // Player would have to be zoomed in on object to pluck it
         playerState = PlayerState.Sun_Zoom;
+
+        TargetLerpSpeedsToMain();
     }
 
     void StartFalling()
@@ -212,6 +269,8 @@ public class PlayerController : MonoBehaviour
         currPluckingRB.linearVelocity += -camLookAtTransform.transform.forward * fromWallForce;
         currPluckingRB.angularVelocity = new Vector3(Random.Range(100, 300), Random.Range(100, 300), Random.Range(100, 300));
         freezeTimer = Random.Range(minFreezeTime, maxFreezeTime);
+
+        TargetLerpSpeedsToMain();
 
         UI.singleton.fallUI.SetActive(true);
         UI.singleton.sunUI.SetActive(false);
