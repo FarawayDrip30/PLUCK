@@ -191,6 +191,7 @@ public class PlayerController : MonoBehaviour
             {
                 if(Input.GetButtonDown("Mouse Click"))
                 {
+                    currPlucking = null;
                     UI.singleton.fallUI.SetActive(false);
                     UI.singleton.sunUI.SetActive(true);
                     playerState = PlayerState.Sun;
