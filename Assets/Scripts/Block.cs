@@ -36,6 +36,8 @@ public class Block : MonoBehaviour
 
         bounceRandomAudio = RandomAudio.singletons["Bounce"];
         thudRandomAudio = RandomAudio.singletons["Thud"];
+
+        transform.rotation = Quaternion.Euler(new Vector3(Random.Range(0, 180), Random.Range(0, 180), Random.Range(0, 180)));
     }
 
     private void OnTriggerEnter(Collider collision)
